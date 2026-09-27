@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url=env("DATABASE_URL")
+}
+
+model Category {
+  id                String     @id @default(uuid())
+  name              String
+  pointsPerQuestion Int
+  color             String     @default("blue")
+  questions         Question[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+}
+
+model Question {
+  id         String   @id @default(uuid())
+  text       String
+  type       String
+  options    String[] 
+  answer     String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
