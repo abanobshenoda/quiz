@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { Plus, Trash2, Loader2, CheckCircle, HelpCircle, X, Check, Circle } from "lucide-react";
-import { getQuestions, createQuestion, deleteQuestion } from "@/app/actions/question";
 import { getCategories } from "@/app/actions/category";
+import { createQuestion, deleteQuestion, getQuestions } from "@/app/actions/question";
+import { Check, CheckCircle, Circle, HelpCircle, Loader2, Plus, Trash2, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState, useTransition } from "react";
 
 // Define Types aligned with Prisma
 type Category = {
@@ -39,7 +39,7 @@ type Question = {
   category: Category;
 };
 
-export default function QuestionsPage() {
+function QuestionsPageContent() {
   const searchParams = useSearchParams();
   const initialCategoryId = searchParams.get("category");
 
@@ -71,7 +71,7 @@ export default function QuestionsPage() {
       getQuestions(initialCategoryId || undefined),
       getCategories(),
     ]);
-    
+
     if (qRes.success && qRes.data) {
       setQuestions(qRes.data as Question[]);
     }
@@ -176,7 +176,7 @@ export default function QuestionsPage() {
 
   return (
     <div className="w-full h-full flex flex-col pt-4 md:pt-8 pr-2 relative">
-      
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 w-full pl-4 md:pl-0 gap-4">
         <div className="flex flex-col">
           <h1 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-indigo-300 font-sans tracking-tight mb-2">
@@ -245,7 +245,7 @@ export default function QuestionsPage() {
 
               <div className="mt-auto pt-4 border-t border-slate-800/60">
                 <p className="text-xs uppercase text-slate-500 mb-3 font-semibold tracking-wider">Expected Answer</p>
-                
+
                 {q.type === "MULTIPLE_CHOICE" ? (
                   <div className="flex flex-col gap-2">
                     {q.options.map((opt, i) => {
@@ -281,11 +281,11 @@ export default function QuestionsPage() {
             >
               <X size={20} />
             </button>
-            
+
             <h2 className="text-2xl font-bold text-slate-100 mb-6 font-sans">New Question</h2>
-            
+
             <form onSubmit={handleCreateSubmit} className="flex flex-col gap-6">
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="categoryId" className="text-sm font-medium text-slate-300">Target Category</label>
@@ -333,7 +333,7 @@ export default function QuestionsPage() {
               {/* Dynamic Form Sections based on Type */}
               <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl">
                 <h4 className="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">Answer Configuration</h4>
-                
+
                 {questionType === "MULTIPLE_CHOICE" && (
                   <div className="flex flex-col gap-3">
                     <p className="text-xs text-slate-500 mb-1">Fill in the options and click the radio button to mark the CORRECT answer.</p>
@@ -409,5 +409,19 @@ export default function QuestionsPage() {
       )}
 
     </div>
+  );
+}
+
+export default function QuestionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-1 items-center justify-center min-h-[400px]">
+          <Loader2 className="animate-spin text-blue-500" size={48} />
+        </div>
+      }
+    >
+      <QuestionsPageContent />
+    </Suspense>
   );
 }
